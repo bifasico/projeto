@@ -1,15 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
-#define NL 100
-#define NR 1000
-#define NU 50
 
-typedef struct 
-{
-	int dia;
-    int mes;
-    int ano;		
-} data;
+
 typedef struct 
 {
 	int num_livro;
@@ -17,15 +9,16 @@ typedef struct
     char nome[60];
     char autor[60];
     char editora[60];			
-	int disponibilidade;		
+	int disponibilidade;	
+    int estado;	
 } livro;
 typedef struct 
 {
 	int num_req;
 	int num_livro;
 	int num_uti;
-	data data_req;
-	data data_ent;
+	char data_req;
+	char data_ent;
 	int ativo;		
 } requisicao;
 typedef struct 
@@ -37,36 +30,6 @@ typedef struct
     int ativo;		
 } utilizador;
 
-int valida_data(int dia, int mes, int ano)
-    {
-    if ((dia >= 1 && dia <= 31) && (mes >= 1 && mes <= 12) && (ano >= 2000 && ano <= 2100)) //verifica se os numeros sao validos
-        {
-            if ((dia == 29 && mes == 2) && ((ano % 4) == 0)) //verifica se o ano e bissexto
-            {
-                return 1;
-            }
-            if (dia <= 28 && mes == 2) //verifica o mes de feveireiro
-            {
-                return 1;
-            }
-            if ((dia <= 30) && (mes == 4 || mes == 6 || mes == 9 || mes == 11)) //verifica os meses de 30 dias
-            {
-                return 1;
-            }
-            if ((dia <=31) && (mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes ==8 || mes == 10 || mes == 12)) //verifica os meses de 31 dias
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
-      }
-       else
-           {
-                return 0;
-           }
-}
 
 void gotoxy(int x, int y)
 {
@@ -75,11 +38,15 @@ void gotoxy(int x, int y)
   coord.Y = y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
+
+
+
 //administrador
- void menu_loginadmin (void)
+ void menu_loginadmin (requisicao *requi, utilizador *user, livro *liv)
 {
      system ("cls"); 
-     char op; 
+     char op;
+     int calen[12][31]; 
      gotoxy(1,1); printf ("      ________________________   _______________________");
      gotoxy(1,2); printf ("     |                        \\_/                       |");
      gotoxy(1,3); printf ("     |_________Nome___________|_|                       |");
@@ -105,9 +72,9 @@ void gotoxy(int x, int y)
      gotoxy(20,10); scanf("%c", &op);
      switch (op)
      {
-            case '1': menu_admin(); break;
-            case '0': menu_principal(); break;
-            default: menu_principal(); break;
+            case '1': menu_admin(requi, user, liv); break;
+            case '0': menu_principal(calen, requi, user, liv); break;
+            //default: menu_principal(calen, requi, user, liv); break; 
      }
      
      
@@ -117,10 +84,10 @@ void gotoxy(int x, int y)
      
      
 //administrador
-menu_admin (void)
+int menu_admin (requisicao *requi, utilizador *user, livro *liv)
 {
-     char op;
-     system ("cls");  
+     system ("cls");
+     char op;  
      gotoxy(1,1); printf ("      ________________________   _______________________");
      gotoxy(1,2); printf ("     |                        \\_/                       |");
      gotoxy(1,3); printf ("     |____Novas_Requisicoes___|_|_______Pressione_1_____|");
@@ -142,16 +109,17 @@ menu_admin (void)
      gotoxy(1,19); printf ("     |                        |_|                       |");
      gotoxy(1,20); printf ("     |________________________|_|_______________________|");
      gotoxy(1,21); printf ("     |________________________/ \\_______________________|");
+     fflush(stdin);
      gotoxy(1,21); scanf("%c", &op);
      switch (op)
      {
-            case '1': menu_novasreq(); break;
-            case '2': menu_inserirlivro(); break;
-            case '3': menu_apagarlivro(); break;
-            case '4': menu_atualizarlivros(); break;
-            case '5': menu_entregalivros(); break;
-            case '6': menu_gestaouti(); break;
-            case '0': menu_loginadmin(); break;
+            case '1': menu_novasreq(requi); break;
+            case '2': menu_inserirlivro(liv); break;
+            case '3': menu_apagarlivro(liv); break;
+            case '4': menu_atualizarlivros(liv); break;
+            case '5': menu_entregalivros(liv, requi); break;
+            case '6': menu_gestaouti(user); break;
+            case '0': menu_loginadmin(requi, user, liv); break;
      }
      
      
@@ -160,7 +128,7 @@ menu_admin (void)
 }
 
 //administrador
-menu_novasreq (void)
+int menu_novasreq(requisicao *requi)
 {
 system ("cls");  
      gotoxy(1,1); printf ("       ____________________________________________________________");
@@ -193,7 +161,7 @@ system ("cls");
      
 }
 //admin
-menu_inserirlivro (void)
+int menu_inserirlivro(livro *liv)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -223,7 +191,7 @@ menu_inserirlivro (void)
      
 } 
 //admin
-menu_apagarlivro (void)
+int menu_apagarlivro(livro *liv)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -255,7 +223,7 @@ menu_apagarlivro (void)
      
 }  
 //admin
-menu_atualizarlivros (void)
+int menu_atualizarlivros(livro *liv)
 {
 system ("cls");  
      gotoxy(1,1); printf ("       _____________________________________________________________________");
@@ -290,7 +258,7 @@ system ("cls");
 }  
 
 //admin
-menu_entregalivros (void)
+int menu_entregalivros(livro *liv, requisicao *requi)
 {
  system ("cls");  
      gotoxy(1,1); printf ("       ______________________________________________________________________");
@@ -322,7 +290,7 @@ menu_entregalivros (void)
      
 }    
 //admin
-menu_gestaouti (void)
+int menu_gestaouti(utilizador *user)
 {
 
      system ("cls");  
@@ -358,7 +326,7 @@ menu_gestaouti (void)
 
 
 //user
-menu_utilizador (void)
+void menu_utilizador(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -390,7 +358,7 @@ menu_utilizador (void)
 }   
 
 //user
-menu_entrar (void)
+void menu_entrar(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -421,7 +389,7 @@ menu_entrar (void)
     
 }    
 //user
-menu_registar (void)
+void menu_registar(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   __________________________");
@@ -454,7 +422,7 @@ menu_registar (void)
 
 
 //user
-menu_entraropc (void)
+void menu_entraropc(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -485,7 +453,7 @@ menu_entraropc (void)
      
 }   
 //user
-menu_reqlivros (void)
+void menu_reqlivros(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("      ________________________   _______________________");
@@ -517,7 +485,7 @@ menu_reqlivros (void)
 }    
 
 //user
-menu_livrosreq (void)
+void menu_livrosreq(void)
 {
      system ("cls");  
      gotoxy(1,1); printf ("       _____________________________________________________________________");
@@ -550,51 +518,54 @@ menu_livrosreq (void)
 }    
 
 //dois
-menu_principal (void)
+int menu_principal(int calen[12][31], requisicao *requi, utilizador *user, livro *liv)
 {
      char op;
-    // system ("cls");  
-     gotoxy(1,1); printf ("      ___________________________________");
-     gotoxy(1,3); printf ("     |         -_-_BEM-VINDO_-_-         |");
-     gotoxy(1,2); printf ("     |                                   |");
-     gotoxy(1,5); printf ("     |  Login Administrador: Pressione 1 |");
-     gotoxy(1,4); printf ("     |                                   |");
-     gotoxy(1,7); printf ("     |  Login Utilizador: Pressione 2    |");
-     gotoxy(1,6); printf ("     |                                   |");
-     gotoxy(1,9); printf ("     |          Sair: Pressione 0        |");
-     gotoxy(1,8); printf ("     |                                   |");
-     gotoxy(1,11); printf ("     |          Qual a opcao:__          |");
-     gotoxy(1,10); printf ("     |                                   |");
-     gotoxy(1,12); printf ("     |                                   |");
-     gotoxy(1,13); printf ("     |                                   |");
-     gotoxy(1,14); printf ("     |                                   |");
-     gotoxy(1,15); printf ("     |                                   |");
-     gotoxy(1,16); printf ("     |                                   |");
-     gotoxy(1,17); printf ("     |                                   |");
-     gotoxy(1,18); printf ("     |                                   |");
-     gotoxy(1,19); printf ("     |                                   |");
-     gotoxy(1,20); printf ("     |___________________________________|");
-     gotoxy(1,21); printf ("     (___________________________________|");
-     gotoxy(30,11); scanf ("%c", &op);
-     switch (op)
-     {
-            case '1': menu_loginadmin(); break;
+     do{
+        
+        system ("cls");  
+        gotoxy(1,1); printf ("      ___________________________________");
+        gotoxy(1,3); printf ("     |         -_-_BEM-VINDO_-_-         |");
+        gotoxy(1,2); printf ("     |                                   |");
+        gotoxy(1,5); printf ("     |  Login Administrador: Pressione 1 |");
+        gotoxy(1,4); printf ("     |                                   |");
+        gotoxy(1,7); printf ("     |  Login Utilizador: Pressione 2    |");
+        gotoxy(1,6); printf ("     |                                   |");
+        gotoxy(1,9); printf ("     |          Sair: Pressione 0        |");
+        gotoxy(1,8); printf ("     |                                   |");
+        gotoxy(1,11); printf ("     |          Qual a opcao:__          |");
+        gotoxy(1,10); printf ("     |                                   |");
+        gotoxy(1,12); printf ("     |                                   |");
+        gotoxy(1,13); printf ("     |                                   |");
+        gotoxy(1,14); printf ("     |                                   |");
+        gotoxy(1,15); printf ("     |                                   |");
+        gotoxy(1,16); printf ("     |                                   |");
+        gotoxy(1,17); printf ("     |                                   |");
+        gotoxy(1,18); printf ("     |                                   |");
+        gotoxy(1,19); printf ("     |                                   |");
+        gotoxy(1,20); printf ("     |___________________________________|");
+        gotoxy(1,21); printf ("     (___________________________________|");
+        gotoxy(30,11); scanf ("%c", &op);
+        switch (op)
+        {
+            case '1': menu_loginadmin(requi, user, liv); break;
             case '2': menu_utilizador(); break;
-            default : exit(0); 
-     }
-     getch();
-     
+            case '0': exit(0);
+        }
+     }while(op!=0);
+     system("pause");
+     getch(); 
 }
 
 
 main ()
 {
-     int i;
-     requisicao req[NR];
-     utilizador uti[NU];
-     livro liv[NL];
+     int i, calen[12][31];
+     requisicao requi[1000];
+     utilizador user[100];
+     livro liv[100];
      system ("cls");
-     menu_principal ();  
+     menu_principal (calen, requi, user, liv);  
      getch();
          
 }
